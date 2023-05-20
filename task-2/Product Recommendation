@@ -1,0 +1,25 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import sklearn
+amazon_ratings = pd.read_csv('customers_rating.csv')
+popular_products = pd.DataFrame(amazon_ratings.groupby('ProductId')['Rating'].count())
+most_popular = popular_products.sort_values('Rating', ascending=False)
+amazon_ratings_subset = amazon_ratings.head(20000)
+ratings_utility_matrix = amazon_ratings_subset.pivot_table(values='Rating', index='UserId', columns='ProductId', fill_value=0)
+X = ratings_utility_matrix.T
+X1 = X
+from sklearn.decomposition import TruncatedSVD
+SVD = TruncatedSVD(n_components=10)
+decomposed_matrix = SVD.fit_transform(X)
+decomposed_matrix.shape
+correlation_matrix = np.corrcoef(decomposed_matrix)
+import random
+product_id = X.index[random.randint(0,len(correlation_matrix))]
+product_names = list(X.index)
+product_index = product_names.index(product_id)
+correlation_product_ID = correlation_matrix[product_index]
+Recommend_list = list(X.index[correlation_product_ID > 0.90])
+Recommend_list.remove(product_id) 
+
+Recommend_list[:10]
